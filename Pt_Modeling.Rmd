@@ -1,0 +1,576 @@
+---
+title: "Pt_ensayo"
+author: "Felipe"
+date: "2024-08-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyr)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(rgl)
+library(plot3D)
+
+# Random variables as inputs.
+
+n = 2000000         # Number of iterations
+set.seed(123)     # Seeds
+
+a = runif(n, 0, 5)                # a = time in Ma
+bx = runif(0.8, n)             # bx = Pt Efficiency (%)
+b = runif(n, 2, 4)                # b= H2O in parent magma (wt.%)
+c = runif(n, 0.2, 1)              # c = H2O in crustal rocks(wt.%)
+d = runif(n, 3, 10)              # d = Pressure (kbars)
+e = rep(50000, n)                  # e = magma rate (m/Ma)
+g = rep(6000, n)                # g = Disk radius (m)
+j = runif(n, 50, 100)        # j = Kd Pt by Fleet et al.(1999)_63(17), 2611–2622 
+k = runif(n, 0.00096, 0.0058)      # K = Pt total melt (ppm) - metasomatized mantle
+                                 
+
+#---------------------------------------------------------------------------------------
+# Data generating process:
+#---------------------------------------------------------------------------------------
+
+#Crustal Melt Calculations
+#--------------------------------------------------------------------------------------
+
+f = a*e                           # f= Magma rate time integrated (m/Ma)
+
+hist(f, breaks = 75)
+#---------------------------------------------------------------------------------------
+#l= x crustal
+
+l = -0.00000476*(a^{5}) + 0.00010012*(a^{4}) - 0.00087381*(a^{3}) + 0.00390394*(a^{2}) - 0.0087404*(a) + 0.00542933
+
+hist(l, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#m= y crustal
+
+m = 0.00025805*(a^{5}) - 0.00451301*(a^{4}) + 0.03096005*(a^{3}) -
+  0.1047359*(a^{2}) + 0.17540876*(a) - 0.08277333
+
+hist(m, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#nn= x crustal
+nn = -0.00183672*(a^{5}) + 0.02924904*(a^{4}) - 0.1769496*(a^{3}) +
+  0.50100047*(a^{2}) - 0.64552174*(a) + 0.2529533
+
+hist(n, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#o= crustal melt fraction Annen 
+o = l*(d^{2}) + m*(d) + nn
+
+hist(o, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#p= crustal Melt fraction Annen logical test
+p = 0
+for(i in 1:n){
+  if(o[i] < 0){
+    p[i] = 0
+  }
+  else{
+    p[i] = o[i]
+  }
+}
+
+hist(p, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#q=crustal Melt fraction Annen logical test2 low
+q = 0
+for(i in 1:n){
+  if((a[i] > 1) & (d[i] > 3)){
+    q[i] = p[i]
+  }
+  else{
+    q[i] = NA
+  }
+}
+
+hist(q, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#r=crustal Melt fraction Annen logical test3
+r = 0
+for(i in 1:n){
+  if((a[i] > 0.25) | (d[i] > 6)){
+    r[i] = q[i]
+  }
+  else{
+    r[i] = NA
+  }
+}
+
+hist(r, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#s=volume of crustal melt fraction rate time integrated (m^3)
+s = pi*(g^{2})*(f)*r 
+
+hist(s, breaks = 75)
+#---------------------------------------------------------------------------------------
+#t= tons of crustal melt fraction time integrated
+t = s*(2.6)
+
+hist(t, breaks = 75)
+
+
+#---------------------------------------------------------------------------------------
+# u= crustal Melt percent Annen
+
+u = r*100
+
+
+#---------------------------------------------------------------------------------------
+# Residual Melt Calculations
+#---------------------------------------------------------------------------------------
+#v= x residual
+v = -0.00011309*(a^{6}) + 0.00186017*(a^{5}) - 0.01179089*(a^{4}) +
+  0.03594339*(a^{3}) - 0.05316974*(a^{2}) + 0.03207473*(a) + 0.00018778
+
+hist(v, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#w= y residual
+w = 0.00120531*(a^{6}) - 0.01970898*(a^{5}) + 0.12379992*(a^{4}) -
+  0.37149275*(a^{3}) + 0.53160183*(a^{2}) - 0.28832793*(a) - 0.00343741
+
+hist(w, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+# x= z residual
+x = -0.00264884*(a^{6}) + 0.04269856*(a^{5}) - 0.26252652*(a^{4}) +
+  0.7613096*(a^{3}) - 1.02505321*(a^{2}) + 0.52268727*(a) + 0.01527694
+
+hist(x, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#y= residual Melt fraction Annen
+y = v*(d^{2}) + w*(d) + x
+
+hist(y, breaks = 75)
+#---------------------------------------------------------------------------------------
+#z= residual Melt fraction Annen logical test
+z = 0
+
+for(i in 1:n){
+  if(y[i] < 0){
+    z[i] = 0
+  }
+  else{
+    z[i] = y[i]
+  }
+}
+
+hist(z, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#aa= residual Melt fraction Annen logical test2
+aa = 0
+for(i in 1:n){
+  if((a[i] > 0.5) & (d[i] > 3)){
+    aa[i] = z[i]
+  }
+}
+
+#--------------------------------------------------------------------------------------
+#ab= volume of residual melt fracton time integrated
+
+ab = pi*(g^{2})*(f)*aa
+
+hist(ab, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+# ac: tons of residual melt fraction time integrated
+
+ac = 2.6*ab
+
+hist(ac, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#ad= residual Melt percent Annen
+
+ad = aa*100
+
+hist(aa, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#Total Melt Calculations
+
+#---------------------------------------------------------------------------------------
+#ae= all_melt_percent_low
+ae = u + ad
+
+hist(ae, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#af= Total melt in tons
+
+af = ac + t
+
+#---------------------------------------------------------------------------------------
+#ag= Volume km^3 total melt
+
+ag = (af/2.5)/(10^{9})
+
+hist(af, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#H2O Content Calculations in residual melt
+
+#-------------------------------------------------------------------------------------------
+#aj= H2O wt.% in residual melt
+
+aj = 100*b*(ad^{-1})
+
+#---------------------------------------------------------------------------------------
+#al= r H2O
+
+al =0.00000163*(d^{2})+0.00002024*(d)-0.00000718
+
+hist(al, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#am= s H2O
+
+am = -0.00088884*(d^{2})-0.0110706*(d)+0.00391827
+
+hist(am, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+# an: t H2O
+
+an = 0.05908101*(d^{2}) + 1.91102201*(d) + 1.79358317
+
+hist(an, breaks = 75)
+
+#---------------------------------------------------------------------------------------
+#ao: residual melt Annen logical test for H2O solubility (F=100-10%)
+
+ao = 0
+
+for(i in 1:n){
+  if(is.na(ad[i]) == FALSE){
+    if(ad[i] <= 10){
+    ao[i] = 10
+    }
+  else if(ad[i] > 10){
+    ao[i] = ad[i]
+    }
+  }
+  else{
+    ao[i] = NA
+  }
+}
+
+hist(ao, breaks = 75)
+
+#----------------------------------------------------------------------------------------
+# ak: log test H2O wt% in residual melt
+ak = 100*(b)*(ao^{-1})
+
+hist(ak, breaks = 75)
+
+#--------------------------------------------------------------------------------------
+# ap: H2O solubility in melt (F =100-10 %)
+
+ap = al*(ao^{2}) + am*ao +  an
+
+hist(ap, breaks = 75)
+
+#---------------------------------------------------------------------------------------------
+# aq: H2O wt% in residual melt logical test 100-10% F range
+
+aq = 0
+
+for(i in 1:n){
+  if((is.na(aj[i]) == FALSE) & (is.na(ap[i]) == FALSE)){
+    if(aj[i] > ap[i]){
+      aq[i] = ap[i]
+    }
+    else if(aj[i] <= ap[i]){
+      aq[i] = aj[i]
+    }
+  }
+  else{
+    aq[i] = NA
+  }
+}
+
+
+#---------------------------------------------------------------------------------------------
+# ar: Excess residual H2O
+
+ar = ak - ap
+
+hist(ar, breaks = 75)
+
+#--------------------------------------------------------------------------------------------
+# at: Excess H2O residual (tons)
+
+at = (ac*ar)/100
+
+hist(at, breaks = 75)
+
+#--------------------------------------------------------------------------------------------
+# au: Log test excess residual H2O tons
+
+au = 0
+
+# =SI(AT3>0,AT3,0)
+
+for(i in 1:n){
+  if(is.na(at[i]) == FALSE){
+    if(at[i] > 0){
+      au[i] = at[i]
+    }
+    else{
+      au[i] = 0
+    }
+  }
+  else{
+    au[i] = 0
+  }
+}
+
+hist(au, breaks = 75)
+
+#-------------------------------------------------------------------------------------------
+# as: H2O residual (tons)
+
+as  = (ac-au)*aq/100
+
+#-----------------------------------------------------------------------------------
+## H2O Content Calcutation in Crustal Partial Melt
+
+#------------------------------------------------------------------------------
+# av: H2O wt% in partial melt
+
+av = 100*(c)*(u^{-1})
+
+#------------------------------------------------------------------------
+# aw : H2O solubility (wt.%) with Annen crustal melt % 
+
+aw = (al*(u^{-2})) + (am*u) + an
+
+#------------------------------------------------------------------------
+# ax: H2O solubility (wt.%) with Annen crustal melt % logical test
+
+ax = 0
+
+for(i in 1:n){
+  if((is.na(av[i]) == FALSE) & (is.na(aw[i]) == FALSE)){
+    if(av[i] > aw[i]){
+      ax[i] = av[i]
+    }
+    else if(av[i] <= aw[i]){
+      ax[i] = aw[i]
+    }
+  }
+  else{
+    aq[i] = NA
+  }
+}
+
+#------------------------------------------------------------------------
+# AY: Excess H2O partial melt
+
+ay = av - aw
+
+hist(ay, breaks = 75)
+
+#------------------------------------------------------------------------
+
+# ba: Excess H2O crustal (tons)
+
+ba = t*ay/100
+
+#-------------------------------------------------------------------------
+# BB: log test excess crustal H2O tons
+
+# =SI(BA2>0,BA2,0)
+
+bb = 0
+
+for(i in 1:n){
+  if((ba[i] > 0) & (is.na(ba[i])==FALSE)){
+    bb[i] = ba[i]
+  }
+  else{
+    bb[i] = 0
+  }
+}
+
+hist(bb, breaks = 75)
+
+#------------------------------------------------------------------------
+#az = H2O crustal (tons)
+
+az = (t-bb)*ax/100
+
+#-------------------------------------------------------------------------
+
+#ah= M res hydrous melt Ton
+
+ah = ac-au+t-bb
+
+#-------------------------------------------------------------------------
+
+#ai=Volume Km^3 hydrous melt
+
+ai = (ah/2.5)/1000000000
+
+#-----------------------------------------------------------------
+#-------------------------------------------------------------------------
+# bc: H2O total in melt (tons)
+
+bc = as + az
+
+
+#-------------------------------------------------------------------------
+# bd: H2O% in hydrous melt
+
+bd = bc/ah*100
+
+
+#-------------------------------------------------------------------------
+# be: exsolvable H2O tons
+
+be = as + az
+
+
+#-------------------------------------------------------------------------
+# bf: Excess H2O total in melt (tons)
+
+bf = at + ba
+
+hist(bf, breaks = 75)
+
+
+#-------------------------------------------------------------------------
+# bg: Excess total H2O NEW log test
+
+bg = au + bb
+
+hist(bg, breaks = 75)
+
+#-------------------------------------------------------------------------
+# bh: M melt - excess H20 tons
+
+bh = ac - au + t + bb
+
+hist(bh, breaks = 75)
+
+
+#-------------------------------------------------------------------------
+# bi: % H2O excess
+
+bi = af - bh
+
+hist(bi, breaks = 75)
+
+#-------------------------------------------------------------------------
+# bj: Moles of excess H2O
+
+bj = (bf*1000000)/(2*1.0079 + 15.99)
+
+hist(bj, breaks = 75)
+
+#-------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+
+```
+
+
+### PLATINUM ENDOWMENT CALCULATIONS
+
+```{r}
+
+
+# 1 - bk: Pt tot ton
+
+bk = (k*af)/1000000
+
+hist(bk, breaks = 75)
+
+#---------------------------------------------------------------------
+# 2 - bl: Pt res melt ton
+
+bl = bk/((j*af)/1000000)
+
+hist(bl, breaks = 75)
+
+
+#------------------------------------------------------------------
+
+# 9 - Platinum Endowment in tons
+
+bm = (bl*ah)/1000000
+
+bn = bm*0.8
+
+hist(bn, breaks = 75)
+
+summary(bn)
+
+summary(ai)
+
+#------------------------------------------------------------------------
+
+```
+
+
+```{r}
+platinum <- data.frame(cbind(a, k, g, d, j, af, ag, ai, bc, bn))
+
+platinum %>%
+  ggplot(aes(x = ai, y = d, colour = a)) + 
+  geom_point(aes(colour = a)) + 
+  xlab("Volume hydrous melt Km^3") + 
+  ylab("Pressure (kbars)") + 
+  scale_colour_gradientn(colours = topo.colors(n))
+
+platinum %>%
+  ggplot(aes(x=ai)) +
+  geom_histogram() +
+  xlab("Volume hydrous melt Km^3") + ylab("Frequency")
+  
+platinum %>%
+  ggplot(aes(x = bn, y = d, colour = ai)) +
+  geom_point(aes(colour = ai)) + xlab("Pt endowment (tons)") +
+  ylab("Pressure (kbars)") +
+   scale_colour_gradientn(colours = topo.colors(n))
+
+platinum %>%
+  ggplot(aes(x=bn)) +
+  geom_histogram() +
+  xlab("Platinum Endowment (tons)") + ylab("Frequency")
+  
+platinum %>%
+  ggplot(aes(x = bn, y = ai, colour = a)) +
+  geom_point(aes(colour = a)) + xlab("Pt Endowments") +
+  ylab("Volume hydrous melt (km3)") +
+  scale_colour_gradientn(colours = topo.colors(n))
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
