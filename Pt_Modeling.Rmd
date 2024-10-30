@@ -1,6 +1,6 @@
 ---
-title: "Pt_ensayo"
-author: "Felipe"
+Title: "Pt_modeling"
+Author: "Felipe Velásquez"
 date: "2024-08-31"
 output: html_document
 ---
@@ -486,9 +486,6 @@ hist(bj, breaks = 75)
 
 #-------------------------------------------------------------------------
 
-#-------------------------------------------------------------------------
-
-```
 
 
 ### PLATINUM ENDOWMENT CALCULATIONS
@@ -503,7 +500,7 @@ bk = (k*af)/1000000
 hist(bk, breaks = 75)
 
 #---------------------------------------------------------------------
-# 2 - bl: Pt res melt ton
+# 2 - bl: Pt ppm res melt
 
 bl = bk/((j*af)/1000000)
 
@@ -512,7 +509,7 @@ hist(bl, breaks = 75)
 
 #------------------------------------------------------------------
 
-# 9 - Platinum Endowment in tons
+# 3 - Pt tot tons
 
 bm = (bl*ah)/1000000
 
@@ -564,13 +561,3 @@ platinum %>%
 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-
-
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
