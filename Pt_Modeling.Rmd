@@ -1,8 +1,8 @@
 ---
 Title: "Pt_modeling"
-Author: "Felipe Velásquez"
-date: "2024-08-31"
-output: html_document
+Author: "Felipe Velásquez-Ruiz"
+Date: "2024-08-31"
+Output: html_document
 ---
 
 ```{r setup, include=FALSE}
